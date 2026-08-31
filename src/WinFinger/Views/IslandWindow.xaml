@@ -11,6 +11,7 @@
         ShowActivated="False"
         ResizeMode="NoResize"
         Width="980" Height="620"
+        FontFamily="{StaticResource Font.Text}"
         SnapsToDevicePixels="True"
         UseLayoutRounding="True">
 

@@ -66,7 +66,7 @@ public sealed partial class AppViewModel : ObservableObject
         };
         Pomodoro.PhaseCompleted += phase =>
         {
-            Notifications.Post("🍅", phase == Services.PomodoroPhase.Focus ? "专注结束，休息一下" : "休息结束，开始专注");
+            Notifications.Post("🍅", phase == Services.PomodoroPhase.Focus ? "Focus complete — time for a break" : "Break complete — ready to focus");
             System.Media.SystemSounds.Asterisk.Play();
         };
         ClipboardStore.Entries.CollectionChanged += (_, e) =>
@@ -76,7 +76,7 @@ public sealed partial class AppViewModel : ObservableObject
                 var entry = ClipboardStore.Entries.FirstOrDefault();
                 if (entry is null) return;
                 var preview = entry.Kind == Models.ClipboardEntryKind.Image
-                    ? "已记录图片"
+                    ? "Image captured"
                     : Truncate(entry.Text ?? "", 24);
                 Notifications.Post("📋", preview);
             }

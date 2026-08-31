@@ -49,28 +49,31 @@ public partial class App : Application
 
     private void CreateTrayIcon()
     {
-        var menu = new System.Windows.Controls.ContextMenu();
+        var menu = new System.Windows.Controls.ContextMenu
+        {
+            FontFamily = new System.Windows.Media.FontFamily("Segoe UI Variable Text, Segoe UI")
+        };
 
-        var openItem = new System.Windows.Controls.MenuItem { Header = "打开 WinFinger" };
+        var openItem = new System.Windows.Controls.MenuItem { Header = "Open WinFinger" };
         openItem.Click += (_, _) => Model.IsExpanded = true;
         menu.Items.Add(openItem);
 
         var pauseItem = new System.Windows.Controls.MenuItem
         {
-            Header = "暂停记录剪贴板",
+            Header = "Pause clipboard capture",
             IsCheckable = true,
             IsChecked = Model.ClipboardMonitor.IsPaused
         };
         pauseItem.Click += (_, _) => Model.ClipboardMonitor.IsPaused = pauseItem.IsChecked;
         menu.Items.Add(pauseItem);
 
-        var clearItem = new System.Windows.Controls.MenuItem { Header = "清空剪贴板历史" };
+        var clearItem = new System.Windows.Controls.MenuItem { Header = "Clear clipboard history" };
         clearItem.Click += (_, _) => Model.ClipboardStore.Clear();
         menu.Items.Add(clearItem);
 
         var glassItem = new System.Windows.Controls.MenuItem
         {
-            Header = "动态玻璃背景（较耗性能）",
+            Header = "Live glass background (uses more resources)",
             IsCheckable = true,
             IsChecked = Model.SettingsStore.Settings.LiveGlassEnabled
         };
@@ -84,7 +87,7 @@ public partial class App : Application
 
         var autoStartItem = new System.Windows.Controls.MenuItem
         {
-            Header = "开机自启动",
+            Header = "Start with Windows",
             IsCheckable = true,
             IsChecked = Model.SettingsStore.Settings.AutoStart
         };
@@ -93,7 +96,7 @@ public partial class App : Application
 
         menu.Items.Add(new System.Windows.Controls.Separator());
 
-        var quitItem = new System.Windows.Controls.MenuItem { Header = "退出 WinFinger" };
+        var quitItem = new System.Windows.Controls.MenuItem { Header = "Quit WinFinger" };
         quitItem.Click += (_, _) => Shutdown();
         menu.Items.Add(quitItem);
 
