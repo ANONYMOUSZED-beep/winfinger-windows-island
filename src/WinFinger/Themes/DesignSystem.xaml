@@ -32,9 +32,9 @@
 
     <!-- Smoked glass tint over the acrylic-blur backdrop window; kept light so the blur shows -->
     <LinearGradientBrush x:Key="Brush.IslandBody" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#8814141C" Offset="0"/>
-        <GradientStop Color="#960E0E16" Offset="0.35"/>
-        <GradientStop Color="#A40A0A12" Offset="1"/>
+        <GradientStop Color="#4614141C" Offset="0"/>
+        <GradientStop Color="#520E0E16" Offset="0.35"/>
+        <GradientStop Color="#600A0A12" Offset="1"/>
     </LinearGradientBrush>
 
     <!-- Lens rim lit from the top-left, fading clockwise (single soft light source) -->
@@ -57,6 +57,26 @@
         <GradientStop Color="#2EFFFFFF" Offset="0"/>
         <GradientStop Color="#0CFFFFFF" Offset="0.18"/>
         <GradientStop Color="#00FFFFFF" Offset="0.45"/>
+    </LinearGradientBrush>
+
+    <!-- Breathing rim glints: light travels around the glass edge (opacity-animated in code) -->
+    <LinearGradientBrush x:Key="Brush.GlintTopLeft" StartPoint="0,0" EndPoint="0.75,0.95">
+        <GradientStop Color="#B4FFFFFF" Offset="0"/>
+        <GradientStop Color="#30FFFFFF" Offset="0.22"/>
+        <GradientStop Color="#00FFFFFF" Offset="0.5"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.GlintBottomRight" StartPoint="1,1" EndPoint="0.25,0.05">
+        <GradientStop Color="#7ACFE8FF" Offset="0"/>
+        <GradientStop Color="#1ECFE8FF" Offset="0.25"/>
+        <GradientStop Color="#00CFE8FF" Offset="0.55"/>
+    </LinearGradientBrush>
+
+    <!-- Chromatic dispersion edge: faint cyan→amber refraction along opposite corners -->
+    <LinearGradientBrush x:Key="Brush.ChromaticEdge" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2E6FD8FF" Offset="0"/>
+        <GradientStop Color="#00000000" Offset="0.32"/>
+        <GradientStop Color="#00000000" Offset="0.68"/>
+        <GradientStop Color="#28FFB35C" Offset="1"/>
     </LinearGradientBrush>
 
     <!-- Diagonal sheen band that sweeps across on expand/notify -->

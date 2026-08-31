@@ -65,6 +65,16 @@
                 <Border Margin="1" BorderThickness="1" BorderBrush="{StaticResource Brush.GlassInnerEdge}"
                         CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False"/>
 
+                <!-- chromatic dispersion along the bevel -->
+                <Border Margin="1.4" BorderThickness="1" BorderBrush="{StaticResource Brush.ChromaticEdge}"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False"/>
+
+                <!-- breathing glints: light slowly travels between the two edges -->
+                <Border x:Name="GlintA" BorderThickness="1.4" BorderBrush="{StaticResource Brush.GlintTopLeft}"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False" Opacity="0.2"/>
+                <Border x:Name="GlintB" BorderThickness="1.4" BorderBrush="{StaticResource Brush.GlintBottomRight}"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False" Opacity="0.9"/>
+
                 <!-- sheen band swept across on expand / notification -->
                 <Border x:Name="SheenBand" Width="150" HorizontalAlignment="Left" Opacity="0"
                         Background="{StaticResource Brush.SheenSweep}" IsHitTestVisible="False">

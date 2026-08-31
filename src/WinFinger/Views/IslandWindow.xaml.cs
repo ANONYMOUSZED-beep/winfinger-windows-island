@@ -81,6 +81,27 @@ public partial class IslandWindow : Window
         };
         _ghostTimer.Tick += (_, _) => UpdateGhostState();
         _ghostTimer.Start();
+
+        StartGlintBreathing();
+    }
+
+    /// <summary>Counter-phased opacity loops so light appears to drift around the glass rim.</summary>
+    private void StartGlintBreathing()
+    {
+        var breathe = new DoubleAnimation(0.2, 0.95, TimeSpan.FromSeconds(2.8))
+        {
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
+        };
+        var counter = new DoubleAnimation(0.9, 0.15, TimeSpan.FromSeconds(2.8))
+        {
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
+        };
+        GlintA.BeginAnimation(OpacityProperty, breathe);
+        GlintB.BeginAnimation(OpacityProperty, counter);
     }
 
     // ── Ghost mode: far cursor → translucent + click-through, near cursor → solid ──

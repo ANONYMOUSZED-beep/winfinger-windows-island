@@ -48,10 +48,13 @@ public sealed class BlurBackdropWindow : Window
         return IntPtr.Zero;
     }
 
+    private bool _systemRounded;
+
     private void EnableBlur()
     {
         // Win11 system acrylic first; legacy blur-behind as fallback for older hosts
-        if (!ApplySystemBackdrop())
+        _systemRounded = ApplySystemBackdrop();
+        if (!_systemRounded)
             ApplyAccent(NativeMethods.ACCENT_ENABLE_BLURBEHIND, 0x00000000);
     }
 
@@ -61,6 +64,12 @@ public sealed class BlurBackdropWindow : Window
         if (NativeMethods.DwmExtendFrameIntoClientArea(_hwnd, ref margins) != 0) return false;
         int dark = 1;
         NativeMethods.DwmSetWindowAttribute(_hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+        // DWM ignores SetWindowRgn for backdrop rendering: use system rounding + no border,
+        // and SetGeometry insets the window so it hides fully behind the island's rounded pill.
+        int corner = NativeMethods.DWMWCP_ROUND;
+        NativeMethods.DwmSetWindowAttribute(_hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+        int border = unchecked((int)NativeMethods.DWMWA_COLOR_NONE);
+        NativeMethods.DwmSetWindowAttribute(_hwnd, NativeMethods.DWMWA_BORDER_COLOR, ref border, sizeof(int));
         int backdrop = NativeMethods.DWMSBT_TRANSIENTWINDOW;
         return NativeMethods.DwmSetWindowAttribute(_hwnd, NativeMethods.DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int)) == 0;
     }
@@ -92,14 +101,21 @@ public sealed class BlurBackdropWindow : Window
         }
     }
 
-    /// <summary>Device-pixel bounds + rounded clip region, z-slotted just below the island.</summary>
+    /// <summary>
+    /// Device-pixel island bounds, z-slotted just below the island. The window is inset so that
+    /// its 8px system-rounded corners stay inside the pill's larger corner radius.
+    /// </summary>
     public void SetGeometry(int x, int y, int width, int height, int cornerRadiusPx)
     {
         if (_hwnd == IntPtr.Zero || width <= 0 || height <= 0) return;
-        NativeMethods.SetWindowPos(_hwnd, _islandHwnd, x, y, width, height, NativeMethods.SWP_NOACTIVATE);
-        int d = Math.Min(cornerRadiusPx * 2, Math.Min(width, height));
-        IntPtr rgn = NativeMethods.CreateRoundRectRgn(0, 0, width + 1, height + 1, d, d);
-        NativeMethods.SetWindowRgn(_hwnd, rgn, true); // the system owns rgn from here on
+        // smallest inset that keeps the backdrop inside the pill's rounded corners:
+        // (r - ownRounding)(1 - 1/sqrt2); own rounding is 8px on Win11, 0 on the legacy path
+        int own = _systemRounded ? 8 : 0;
+        int inset = Math.Max(1, (int)Math.Ceiling(Math.Max(0, cornerRadiusPx - own) * 0.2929) + 1);
+        int w = width - inset * 2;
+        int h = height - inset * 2;
+        if (w <= 0 || h <= 0) return;
+        NativeMethods.SetWindowPos(_hwnd, _islandHwnd, x + inset, y + inset, w, h, NativeMethods.SWP_NOACTIVATE);
     }
 
     /// <summary>Move without resizing or rebuilding the region (drag fast path).</summary>

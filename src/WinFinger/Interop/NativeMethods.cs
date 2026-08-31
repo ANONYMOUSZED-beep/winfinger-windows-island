@@ -42,8 +42,12 @@ internal static class NativeMethods
 
     // ── Win11 system backdrop (documented DWM API) ──
     public const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    public const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    public const int DWMWA_BORDER_COLOR = 34;
     public const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
     public const int DWMSBT_TRANSIENTWINDOW = 3; // acrylic
+    public const int DWMWCP_ROUND = 2;           // ~8px system rounding
+    public const uint DWMWA_COLOR_NONE = 0xFFFFFFFE;
 
     [DllImport("dwmapi.dll")]
     public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
