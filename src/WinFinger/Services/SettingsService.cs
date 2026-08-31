@@ -10,6 +10,7 @@ public sealed class AppSettings
     public bool ClipboardPaused { get; set; }
     public int PomodoroFocusMinutes { get; set; } = 25;
     public int PomodoroBreakMinutes { get; set; } = 5;
+    public double IslandOffsetX { get; set; }
 }
 
 /// <summary>settings.json persistence + the HKCU Run auto-start key.</summary>

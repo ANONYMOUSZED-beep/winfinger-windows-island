@@ -15,8 +15,9 @@
     <Color x:Key="Color.TextTertiary">#FF5B5B63</Color>
 
     <SolidColorBrush x:Key="Brush.Island" Color="{StaticResource Color.IslandBlack}"/>
-    <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Surface}"/>
-    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="{StaticResource Color.SurfaceHover}"/>
+    <!-- translucent white glass layers (desktop shows through the island behind them) -->
+    <SolidColorBrush x:Key="Brush.Surface" Color="#17FFFFFF"/>
+    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="#26FFFFFF"/>
     <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Color.Accent}"/>
     <SolidColorBrush x:Key="Brush.Green" Color="{StaticResource Color.Green}"/>
     <SolidColorBrush x:Key="Brush.Orange" Color="{StaticResource Color.Orange}"/>
@@ -24,19 +25,46 @@
     <SolidColorBrush x:Key="Brush.TextPrimary" Color="{StaticResource Color.TextPrimary}"/>
     <SolidColorBrush x:Key="Brush.TextSecondary" Color="{StaticResource Color.TextSecondary}"/>
     <SolidColorBrush x:Key="Brush.TextTertiary" Color="{StaticResource Color.TextTertiary}"/>
-    <SolidColorBrush x:Key="Brush.Stroke" Color="#16FFFFFF"/>
+    <SolidColorBrush x:Key="Brush.Stroke" Color="#22FFFFFF"/>
     <SolidColorBrush x:Key="Brush.Divider" Color="#0DFFFFFF"/>
 
-    <!-- Island body: near-black with a faint vertical sheen -->
+    <!-- ═══ Liquid Glass material ═══ -->
+
+    <!-- Smoked glass tint over the acrylic-blur backdrop window; kept light so the blur shows -->
     <LinearGradientBrush x:Key="Brush.IslandBody" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#FF0E0E10" Offset="0"/>
-        <GradientStop Color="#FF060607" Offset="0.25"/>
-        <GradientStop Color="#FF000000" Offset="1"/>
+        <GradientStop Color="#8814141C" Offset="0"/>
+        <GradientStop Color="#960E0E16" Offset="0.35"/>
+        <GradientStop Color="#A40A0A12" Offset="1"/>
     </LinearGradientBrush>
 
-    <!-- Top highlight line -->
+    <!-- Lens rim lit from the top-left, fading clockwise (single soft light source) -->
+    <LinearGradientBrush x:Key="Brush.GlassRim" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#92FFFFFF" Offset="0"/>
+        <GradientStop Color="#30FFFFFF" Offset="0.35"/>
+        <GradientStop Color="#16FFFFFF" Offset="0.7"/>
+        <GradientStop Color="#26FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Inner dark edge: simulates the glass thickness below the rim -->
+    <LinearGradientBrush x:Key="Brush.GlassInnerEdge" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#38000000" Offset="0"/>
+        <GradientStop Color="#14000000" Offset="0.5"/>
+        <GradientStop Color="#28000000" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Curved top reflection: stretches over the island, gone by ~45% height -->
     <LinearGradientBrush x:Key="Brush.TopSheen" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#12FFFFFF" Offset="0"/>
+        <GradientStop Color="#2EFFFFFF" Offset="0"/>
+        <GradientStop Color="#0CFFFFFF" Offset="0.18"/>
+        <GradientStop Color="#00FFFFFF" Offset="0.45"/>
+    </LinearGradientBrush>
+
+    <!-- Diagonal sheen band that sweeps across on expand/notify -->
+    <LinearGradientBrush x:Key="Brush.SheenSweep" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#00FFFFFF" Offset="0"/>
+        <GradientStop Color="#2AFFFFFF" Offset="0.45"/>
+        <GradientStop Color="#3EFFFFFF" Offset="0.5"/>
+        <GradientStop Color="#2AFFFFFF" Offset="0.55"/>
         <GradientStop Color="#00FFFFFF" Offset="1"/>
     </LinearGradientBrush>
 
@@ -185,7 +213,7 @@
 
     <!-- Dark text box -->
     <Style x:Key="TextBox.Dark" TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource Brush.Surface}"/>
+        <Setter Property="Background" Value="#12FFFFFF"/>
         <Setter Property="Foreground" Value="{StaticResource Brush.TextPrimary}"/>
         <Setter Property="CaretBrush" Value="{StaticResource Brush.Accent}"/>
         <Setter Property="SelectionBrush" Value="#550A84FF"/>

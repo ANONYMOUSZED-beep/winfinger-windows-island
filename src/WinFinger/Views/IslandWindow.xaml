@@ -22,20 +22,30 @@
                 Width="300" Height="36"
                 CornerRadius="18"
                 Background="{StaticResource Brush.IslandBody}"
-                BorderBrush="{StaticResource Brush.Stroke}"
-                BorderThickness="1"
+                BorderBrush="{StaticResource Brush.GlassRim}"
+                BorderThickness="1.2"
                 Cursor="Hand"
+                MouseLeftButtonDown="OnIslandMouseDown"
                 MouseLeftButtonUp="OnIslandClicked"
+                MouseMove="OnIslandMouseMove"
                 MouseEnter="OnIslandMouseEnter"
                 MouseLeave="OnIslandMouseLeave">
             <Border.Effect>
-                <DropShadowEffect x:Name="IslandShadow" Color="#000000" BlurRadius="26" ShadowDepth="6" Direction="270" Opacity="0.55"/>
+                <DropShadowEffect x:Name="IslandShadow" Color="#000000" BlurRadius="32" ShadowDepth="6" Direction="270" Opacity="0.35"/>
             </Border.Effect>
 
             <Grid ClipToBounds="True">
-                <!-- top sheen -->
-                <Border Height="14" VerticalAlignment="Top" Background="{StaticResource Brush.TopSheen}"
-                        CornerRadius="18,18,0,0" IsHitTestVisible="False"/>
+                <!-- adaptive tint: album accent bleeds into the glass while music plays -->
+                <Border x:Name="TintLayer" IsHitTestVisible="False" Opacity="0"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}">
+                    <Border.Background>
+                        <SolidColorBrush x:Name="TintBrush" Color="#000000"/>
+                    </Border.Background>
+                </Border>
+
+                <!-- curved top reflection: scales with the island, fades out by ~45% height -->
+                <Border Background="{StaticResource Brush.TopSheen}"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False"/>
 
                 <views:CompactIslandView x:Name="CompactView"/>
 
@@ -50,6 +60,21 @@
                                    TextTrimming="CharacterEllipsis" Text=""/>
                     </StackPanel>
                 </Grid>
+
+                <!-- inner dark edge: glass thickness -->
+                <Border Margin="1" BorderThickness="1" BorderBrush="{StaticResource Brush.GlassInnerEdge}"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}" IsHitTestVisible="False"/>
+
+                <!-- sheen band swept across on expand / notification -->
+                <Border x:Name="SheenBand" Width="150" HorizontalAlignment="Left" Opacity="0"
+                        Background="{StaticResource Brush.SheenSweep}" IsHitTestVisible="False">
+                    <Border.RenderTransform>
+                        <TransformGroup>
+                            <SkewTransform AngleX="-18"/>
+                            <TranslateTransform x:Name="SheenTranslate" X="-200"/>
+                        </TransformGroup>
+                    </Border.RenderTransform>
+                </Border>
             </Grid>
         </Border>
     </Grid>

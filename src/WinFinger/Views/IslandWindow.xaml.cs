@@ -30,6 +30,21 @@ public partial class IslandWindow : Window
     private bool _notificationShowing;
     private bool _hovering;
 
+    // ghost mode (fade + click-through when the cursor is far away)
+    private readonly System.Windows.Threading.DispatcherTimer _ghostTimer;
+    private bool _ghosted;
+    private const double GhostEnterDistance = 160; // px, become ghost beyond this
+    private const double GhostExitDistance = 100;  // px, solidify within this
+
+    // acrylic blur slotted beneath the island
+    private BlurBackdropWindow? _backdrop;
+
+    // horizontal drag reposition
+    private bool _dragging;
+    private bool _dragArmed;
+    private System.Windows.Point _dragStartScreen;
+    private double _dragStartLeft;
+
     public IslandWindow(AppViewModel model)
     {
         _model = model;
@@ -43,6 +58,9 @@ public partial class IslandWindow : Window
         {
             PositionAtTopCenter();
             _model.ClipboardMonitor.Attach(this);
+            _backdrop = new BlurBackdropWindow(_hwnd);
+            _backdrop.Show();
+            SyncBackdrop();
         };
         PreviewKeyDown += OnPreviewKeyDown;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
@@ -56,6 +74,94 @@ public partial class IslandWindow : Window
         _notificationTimer.Tick += (_, _) => HideNotification();
         model.Notifications.NotificationPosted += OnNotificationPosted;
         model.Media.PropertyChanged += OnMediaChangedForGlow;
+
+        _ghostTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(150)
+        };
+        _ghostTimer.Tick += (_, _) => UpdateGhostState();
+        _ghostTimer.Start();
+    }
+
+    // ── Ghost mode: far cursor → translucent + click-through, near cursor → solid ──
+
+    private void UpdateGhostState()
+    {
+        if (_hwnd == IntPtr.Zero || !IslandBorder.IsLoaded) return;
+
+        if (_model.IsExpanded || _notificationShowing || _hovering || _dragging)
+        {
+            if (_ghosted) SetGhosted(false);
+            return;
+        }
+
+        if (!NativeMethods.GetCursorPos(out var cursor)) return;
+        Rect bounds;
+        try
+        {
+            var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
+            var bottomRight = IslandBorder.PointToScreen(new Point(IslandBorder.ActualWidth, IslandBorder.ActualHeight));
+            bounds = new Rect(topLeft, bottomRight);
+        }
+        catch
+        {
+            return;
+        }
+        double dx = Math.Max(Math.Max(bounds.Left - cursor.X, cursor.X - bounds.Right), 0);
+        double dy = Math.Max(Math.Max(bounds.Top - cursor.Y, cursor.Y - bounds.Bottom), 0);
+        double distance = Math.Sqrt(dx * dx + dy * dy);
+
+        if (!_ghosted && distance > GhostEnterDistance) SetGhosted(true);
+        else if (_ghosted && distance < GhostExitDistance) SetGhosted(false);
+    }
+
+    private void SetGhosted(bool ghosted)
+    {
+        _ghosted = ghosted;
+        int style = NativeMethods.GetWindowLong(_hwnd, NativeMethods.GWL_EXSTYLE);
+        style = ghosted ? style | NativeMethods.WS_EX_TRANSPARENT : style & ~NativeMethods.WS_EX_TRANSPARENT;
+        NativeMethods.SetWindowLong(_hwnd, NativeMethods.GWL_EXSTYLE, style);
+        IslandBorder.BeginAnimation(OpacityProperty,
+            new DoubleAnimation(ghosted ? 0.4 : 1.0, TimeSpan.FromMilliseconds(260))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            });
+        if (ghosted) _backdrop?.Hide();
+        else SyncBackdrop();
+    }
+
+    /// <summary>Aligns the blur window with IslandBorder's current on-screen pill and shows it.</summary>
+    private void SyncBackdrop()
+    {
+        if (_backdrop is null || !IslandBorder.IsLoaded || _ghosted) return;
+        try
+        {
+            var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
+            var bottomRight = IslandBorder.PointToScreen(new Point(IslandBorder.ActualWidth, IslandBorder.ActualHeight));
+            double scale = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+            // Show first: WPF re-asserts HWND_TOPMOST on Show, which would undo the z-slot below
+            _backdrop.Show();
+            _backdrop.SetGeometry((int)topLeft.X, (int)topLeft.Y,
+                (int)(bottomRight.X - topLeft.X), (int)(bottomRight.Y - topLeft.Y),
+                (int)Math.Round(IslandBorder.CornerRadius.TopLeft * scale));
+        }
+        catch
+        {
+            // island not on screen yet
+        }
+    }
+
+    private void MoveBackdropWithDrag()
+    {
+        if (_backdrop is null || _ghosted) return;
+        try
+        {
+            var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
+            _backdrop.MoveTo((int)topLeft.X, (int)topLeft.Y);
+        }
+        catch
+        {
+        }
     }
 
     // ── Cover-color glow (pulses while music plays) ──
@@ -70,6 +176,10 @@ public partial class IslandWindow : Window
     {
         if (_model.Media.IsPlaying)
         {
+            // adaptive tint: bleed the album accent into the glass
+            TintBrush.BeginAnimation(System.Windows.Media.SolidColorBrush.ColorProperty,
+                new ColorAnimation(_model.Media.AccentColor, TimeSpan.FromMilliseconds(600)));
+            TintLayer.BeginAnimation(OpacityProperty, new DoubleAnimation(0.12, TimeSpan.FromMilliseconds(600)));
             IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.ColorProperty,
                 new ColorAnimation(_model.Media.AccentColor, TimeSpan.FromMilliseconds(600)));
             IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty,
@@ -82,11 +192,48 @@ public partial class IslandWindow : Window
         }
         else
         {
+            TintLayer.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(600)));
             IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.ColorProperty,
                 new ColorAnimation(System.Windows.Media.Colors.Black, TimeSpan.FromMilliseconds(600)));
             IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty,
-                new DoubleAnimation(0.55, TimeSpan.FromMilliseconds(600)));
+                new DoubleAnimation(0.35, TimeSpan.FromMilliseconds(600)));
         }
+    }
+
+    private void OnIslandMouseMove(object sender, MouseEventArgs e)
+    {
+        var position = e.GetPosition(IslandBorder);
+
+        // horizontal drag
+        if (_dragArmed && e.LeftButton == MouseButtonState.Pressed)
+        {
+            var screen = IslandBorder.PointToScreen(position);
+            double deltaX = screen.X - _dragStartScreen.X;
+            if (!_dragging && Math.Abs(deltaX) > 4) _dragging = true;
+            if (_dragging)
+            {
+                // PointToScreen returns device px; convert delta to DIP
+                var source = PresentationSource.FromVisual(this);
+                double scale = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+                Left = _dragStartLeft + deltaX / scale;
+                ClampLeft();
+                MoveBackdropWithDrag();
+            }
+        }
+    }
+
+    /// <summary>Sweeps a diagonal sheen band across the island (liquid glass "reacts" moment).</summary>
+    private void PlaySheen()
+    {
+        double travel = IslandBorder.ActualWidth + 300;
+        SheenBand.Opacity = 1;
+        SheenTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty,
+            new DoubleAnimation(-220, travel, TimeSpan.FromMilliseconds(700))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+            });
+        var fade = new DoubleAnimation(0, TimeSpan.FromMilliseconds(150)) { BeginTime = TimeSpan.FromMilliseconds(600) };
+        SheenBand.BeginAnimation(OpacityProperty, fade);
     }
 
     // ── Hover pre-expand (compact state only) ──
@@ -122,6 +269,8 @@ public partial class IslandWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        _ghostTimer.Stop();
+        _backdrop?.Close();
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         RemoveMouseHook();
         base.OnClosed(e);
@@ -132,12 +281,49 @@ public partial class IslandWindow : Window
 
     private void PositionAtTopCenter()
     {
-        Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
+        Left = CenteredLeft() + _model.SettingsStore.Settings.IslandOffsetX;
         Top = 0;
+        ClampLeft();
+        SyncBackdrop();
+    }
+
+    private double CenteredLeft() => (SystemParameters.PrimaryScreenWidth - Width) / 2;
+
+    private void ClampLeft()
+    {
+        // keep the visible island (centered inside the stage window) on screen
+        double islandHalf = Math.Max(IslandBorder.ActualWidth, CompactWidth) / 2;
+        double min = 8 - (Width / 2 - islandHalf);
+        double max = SystemParameters.PrimaryScreenWidth - 8 - (Width / 2 + islandHalf);
+        Left = Math.Clamp(Left, min, max);
+    }
+
+    // ── Click vs horizontal drag ──
+
+    private void OnIslandMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_model.IsExpanded) return;
+        _dragArmed = true;
+        _dragging = false;
+        _dragStartScreen = IslandBorder.PointToScreen(e.GetPosition(IslandBorder));
+        _dragStartLeft = Left;
+        IslandBorder.CaptureMouse();
     }
 
     private void OnIslandClicked(object sender, MouseButtonEventArgs e)
     {
+        if (_dragArmed)
+        {
+            _dragArmed = false;
+            IslandBorder.ReleaseMouseCapture();
+            if (_dragging)
+            {
+                _dragging = false;
+                _model.SettingsStore.Settings.IslandOffsetX = Left - CenteredLeft();
+                _model.SettingsStore.Save();
+                return; // a drag is not a click
+            }
+        }
         if (!_model.IsExpanded)
             _model.IsExpanded = true;
     }
@@ -209,6 +395,7 @@ public partial class IslandWindow : Window
         NotificationView.Opacity = 0;
         NotificationView.BeginAnimation(OpacityProperty,
             new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)) { BeginTime = TimeSpan.FromMilliseconds(120) });
+        PlaySheen();
     }
 
     private void HideNotification()
@@ -261,6 +448,7 @@ public partial class IslandWindow : Window
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
         ExpandedView.BeginAnimation(OpacityProperty, fadeIn);
+        PlaySheen();
 
         InstallMouseHook();
     }
@@ -287,7 +475,10 @@ public partial class IslandWindow : Window
 
     private void AnimateIsland(double toWidth, double toHeight, double toRadius, TimeSpan duration, IEasingFunction easing)
     {
+        // acrylic windows resize badly: hide the blur during the morph, re-align at the end
+        _backdrop?.Hide();
         var widthAnim = new DoubleAnimation(toWidth, duration) { EasingFunction = easing };
+        widthAnim.Completed += (_, _) => SyncBackdrop();
         var heightAnim = new DoubleAnimation(toHeight, duration) { EasingFunction = easing };
         var radiusAnim = new CornerRadiusAnimation
         {
