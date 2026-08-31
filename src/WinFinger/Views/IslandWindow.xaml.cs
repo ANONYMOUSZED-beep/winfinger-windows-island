@@ -39,6 +39,7 @@ public partial class IslandWindow : Window
     // self-made frosted glass (live capture behind the island)
     private LiveGlassCapture? _glass;
     private System.Windows.Threading.DispatcherTimer? _glassTimer;
+    private bool _morphing; // size animation in flight: skip captures so they don't fight for frames
 
     // horizontal drag reposition
     private bool _dragging;
@@ -63,11 +64,10 @@ public partial class IslandWindow : Window
             GlassBrush.ImageSource = _glass.Bitmap;
             _glassTimer = new System.Windows.Threading.DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(80)
+                Interval = TimeSpan.FromMilliseconds(160)
             };
             _glassTimer.Tick += (_, _) => CaptureGlass();
-            _glassTimer.Start();
-            CaptureGlass();
+            SetLiveGlass(_model.SettingsStore.Settings.LiveGlassEnabled);
         };
         PreviewKeyDown += OnPreviewKeyDown;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
@@ -128,6 +128,9 @@ public partial class IslandWindow : Window
             RepeatBehavior = RepeatBehavior.Forever,
             EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
         };
+        // slow ambience: no need to re-render the shadowed island subtree at 60fps
+        Timeline.SetDesiredFrameRate(breathe, 20);
+        Timeline.SetDesiredFrameRate(counter, 20);
         GlintA.BeginAnimation(OpacityProperty, breathe);
         GlintB.BeginAnimation(OpacityProperty, counter);
     }
@@ -175,12 +178,42 @@ public partial class IslandWindow : Window
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             });
+
+        // faded island doesn't need ambience: stop all recurring animation while ghosted
+        if (ghosted)
+        {
+            GlintA.BeginAnimation(OpacityProperty, null);
+            GlintB.BeginAnimation(OpacityProperty, null);
+            GlintA.Opacity = 0.3;
+            GlintB.Opacity = 0.3;
+        }
+        else
+        {
+            StartGlintBreathing();
+            CaptureGlass();
+        }
+    }
+
+    /// <summary>Toggles the live-capture glass (heavier GPU) vs. plain static glass.</summary>
+    public void SetLiveGlass(bool enabled)
+    {
+        if (_glassTimer is null) return;
+        GlassLayer.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        if (enabled)
+        {
+            _glassTimer.Start();
+            CaptureGlass();
+        }
+        else
+        {
+            _glassTimer.Stop();
+        }
     }
 
     /// <summary>One glass frame: grab what's behind IslandBorder (device px) into the ImageBrush.</summary>
     private void CaptureGlass()
     {
-        if (_glass is null || !IslandBorder.IsLoaded || _ghosted) return;
+        if (_glass is null || !IslandBorder.IsLoaded || _ghosted || _morphing) return;
         try
         {
             var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
@@ -212,13 +245,14 @@ public partial class IslandWindow : Window
             TintLayer.BeginAnimation(OpacityProperty, new DoubleAnimation(0.12, TimeSpan.FromMilliseconds(600)));
             IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.ColorProperty,
                 new ColorAnimation(_model.Media.AccentColor, TimeSpan.FromMilliseconds(600)));
-            IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty,
-                new DoubleAnimation(0.45, 0.85, TimeSpan.FromMilliseconds(1600))
-                {
-                    AutoReverse = true,
-                    RepeatBehavior = RepeatBehavior.Forever,
-                    EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
-                });
+            var pulse = new DoubleAnimation(0.45, 0.85, TimeSpan.FromMilliseconds(1600))
+            {
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
+            };
+            Timeline.SetDesiredFrameRate(pulse, 20);
+            IslandShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, pulse);
         }
         else
         {
@@ -512,7 +546,13 @@ public partial class IslandWindow : Window
 
     private void AnimateIsland(double toWidth, double toHeight, double toRadius, TimeSpan duration, IEasingFunction easing)
     {
+        _morphing = true;
         var widthAnim = new DoubleAnimation(toWidth, duration) { EasingFunction = easing };
+        widthAnim.Completed += (_, _) =>
+        {
+            _morphing = false;
+            CaptureGlass();
+        };
         var heightAnim = new DoubleAnimation(toHeight, duration) { EasingFunction = easing };
         var radiusAnim = new CornerRadiusAnimation
         {

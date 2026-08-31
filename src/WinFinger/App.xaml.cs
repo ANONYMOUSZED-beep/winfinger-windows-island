@@ -68,6 +68,20 @@ public partial class App : Application
         clearItem.Click += (_, _) => Model.ClipboardStore.Clear();
         menu.Items.Add(clearItem);
 
+        var glassItem = new System.Windows.Controls.MenuItem
+        {
+            Header = "动态玻璃背景（较耗性能）",
+            IsCheckable = true,
+            IsChecked = Model.SettingsStore.Settings.LiveGlassEnabled
+        };
+        glassItem.Click += (_, _) =>
+        {
+            Model.SettingsStore.Settings.LiveGlassEnabled = glassItem.IsChecked;
+            Model.SettingsStore.Save();
+            _islandWindow?.SetLiveGlass(glassItem.IsChecked);
+        };
+        menu.Items.Add(glassItem);
+
         var autoStartItem = new System.Windows.Controls.MenuItem
         {
             Header = "开机自启动",

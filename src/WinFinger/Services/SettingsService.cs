@@ -11,6 +11,7 @@ public sealed class AppSettings
     public int PomodoroFocusMinutes { get; set; } = 25;
     public int PomodoroBreakMinutes { get; set; } = 5;
     public double IslandOffsetX { get; set; }
+    public bool LiveGlassEnabled { get; set; } = true;
 }
 
 /// <summary>settings.json persistence + the HKCU Run auto-start key.</summary>
