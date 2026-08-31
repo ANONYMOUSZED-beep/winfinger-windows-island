@@ -90,6 +90,27 @@ public partial class IslandWindow : Window
         _ghostTimer.Start();
 
         StartGlintBreathing();
+
+        // periodic working-set trim keeps the Task Manager footprint honest for a tray-style app
+        var trimTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMinutes(5)
+        };
+        trimTimer.Tick += (_, _) => { if (!_model.IsExpanded) TrimWorkingSet(); };
+        trimTimer.Start();
+
+        // first trim shortly after startup, once JIT/first-render churn is over
+        var firstTrim = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(20) };
+        firstTrim.Tick += (_, _) => { firstTrim.Stop(); TrimWorkingSet(); };
+        firstTrim.Start();
+    }
+
+    private static void TrimWorkingSet()
+    {
+        GC.Collect(2, GCCollectionMode.Optimized);
+        GC.WaitForPendingFinalizers();
+        NativeMethods.SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle,
+            new IntPtr(-1), new IntPtr(-1));
     }
 
     /// <summary>Counter-phased opacity loops so light appears to drift around the glass rim.</summary>
@@ -468,6 +489,11 @@ public partial class IslandWindow : Window
     {
         RemoveMouseHook();
         SetNoActivate(true);
+
+        // release the expanded panel's garbage once the animation settles
+        var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        t.Tick += (_, _) => { t.Stop(); TrimWorkingSet(); };
+        t.Start();
 
         AnimateIsland(toWidth: CompactWidth, toHeight: CompactHeight, toRadius: CompactRadius,
             duration: TimeSpan.FromMilliseconds(180),
