@@ -35,6 +35,15 @@
             </Border.Effect>
 
             <Grid ClipToBounds="True">
+                <!-- live frosted glass: blurred + saturation-boosted capture of what's behind -->
+                <Border x:Name="GlassLayer" IsHitTestVisible="False"
+                        CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}"
+                        RenderOptions.BitmapScalingMode="Fant">
+                    <Border.Background>
+                        <ImageBrush x:Name="GlassBrush" Stretch="Fill"/>
+                    </Border.Background>
+                </Border>
+
                 <!-- adaptive tint: album accent bleeds into the glass while music plays -->
                 <Border x:Name="TintLayer" IsHitTestVisible="False" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=IslandBorder}">

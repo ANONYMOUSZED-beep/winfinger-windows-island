@@ -36,8 +36,9 @@ public partial class IslandWindow : Window
     private const double GhostEnterDistance = 160; // px, become ghost beyond this
     private const double GhostExitDistance = 100;  // px, solidify within this
 
-    // acrylic blur slotted beneath the island
-    private BlurBackdropWindow? _backdrop;
+    // self-made frosted glass (live capture behind the island)
+    private LiveGlassCapture? _glass;
+    private System.Windows.Threading.DispatcherTimer? _glassTimer;
 
     // horizontal drag reposition
     private bool _dragging;
@@ -58,9 +59,15 @@ public partial class IslandWindow : Window
         {
             PositionAtTopCenter();
             _model.ClipboardMonitor.Attach(this);
-            _backdrop = new BlurBackdropWindow(_hwnd);
-            _backdrop.Show();
-            SyncBackdrop();
+            _glass = new LiveGlassCapture();
+            GlassBrush.ImageSource = _glass.Bitmap;
+            _glassTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(80)
+            };
+            _glassTimer.Tick += (_, _) => CaptureGlass();
+            _glassTimer.Start();
+            CaptureGlass();
         };
         PreviewKeyDown += OnPreviewKeyDown;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
@@ -147,41 +154,22 @@ public partial class IslandWindow : Window
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             });
-        if (ghosted) _backdrop?.Hide();
-        else SyncBackdrop();
     }
 
-    /// <summary>Aligns the blur window with IslandBorder's current on-screen pill and shows it.</summary>
-    private void SyncBackdrop()
+    /// <summary>One glass frame: grab what's behind IslandBorder (device px) into the ImageBrush.</summary>
+    private void CaptureGlass()
     {
-        if (_backdrop is null || !IslandBorder.IsLoaded || _ghosted) return;
+        if (_glass is null || !IslandBorder.IsLoaded || _ghosted) return;
         try
         {
             var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
             var bottomRight = IslandBorder.PointToScreen(new Point(IslandBorder.ActualWidth, IslandBorder.ActualHeight));
-            double scale = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-            // Show first: WPF re-asserts HWND_TOPMOST on Show, which would undo the z-slot below
-            _backdrop.Show();
-            _backdrop.SetGeometry((int)topLeft.X, (int)topLeft.Y,
-                (int)(bottomRight.X - topLeft.X), (int)(bottomRight.Y - topLeft.Y),
-                (int)Math.Round(IslandBorder.CornerRadius.TopLeft * scale));
+            _glass.Capture((int)topLeft.X, (int)topLeft.Y,
+                (int)(bottomRight.X - topLeft.X), (int)(bottomRight.Y - topLeft.Y));
         }
         catch
         {
             // island not on screen yet
-        }
-    }
-
-    private void MoveBackdropWithDrag()
-    {
-        if (_backdrop is null || _ghosted) return;
-        try
-        {
-            var topLeft = IslandBorder.PointToScreen(new Point(0, 0));
-            _backdrop.MoveTo((int)topLeft.X, (int)topLeft.Y);
-        }
-        catch
-        {
         }
     }
 
@@ -238,7 +226,7 @@ public partial class IslandWindow : Window
                 double scale = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
                 Left = _dragStartLeft + deltaX / scale;
                 ClampLeft();
-                MoveBackdropWithDrag();
+                CaptureGlass();
             }
         }
     }
@@ -286,12 +274,15 @@ public partial class IslandWindow : Window
         int style = NativeMethods.GetWindowLong(_hwnd, NativeMethods.GWL_EXSTYLE);
         NativeMethods.SetWindowLong(_hwnd, NativeMethods.GWL_EXSTYLE,
             style | NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE);
+        // keep the island out of screen captures so the live glass never captures itself
+        NativeMethods.SetWindowDisplayAffinity(_hwnd, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
     }
 
     protected override void OnClosed(EventArgs e)
     {
         _ghostTimer.Stop();
-        _backdrop?.Close();
+        _glassTimer?.Stop();
+        _glass?.Dispose();
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         RemoveMouseHook();
         base.OnClosed(e);
@@ -305,7 +296,6 @@ public partial class IslandWindow : Window
         Left = CenteredLeft() + _model.SettingsStore.Settings.IslandOffsetX;
         Top = 0;
         ClampLeft();
-        SyncBackdrop();
     }
 
     private double CenteredLeft() => (SystemParameters.PrimaryScreenWidth - Width) / 2;
@@ -496,10 +486,7 @@ public partial class IslandWindow : Window
 
     private void AnimateIsland(double toWidth, double toHeight, double toRadius, TimeSpan duration, IEasingFunction easing)
     {
-        // acrylic windows resize badly: hide the blur during the morph, re-align at the end
-        _backdrop?.Hide();
         var widthAnim = new DoubleAnimation(toWidth, duration) { EasingFunction = easing };
-        widthAnim.Completed += (_, _) => SyncBackdrop();
         var heightAnim = new DoubleAnimation(toHeight, duration) { EasingFunction = easing };
         var radiusAnim = new CornerRadiusAnimation
         {
