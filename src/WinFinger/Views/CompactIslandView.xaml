@@ -1,0 +1,61 @@
+<UserControl x:Class="WinFinger.Views.CompactIslandView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="14,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: media slot (cover appears when something plays; green dot placeholder otherwise) -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <Grid VerticalAlignment="Center">
+                <Ellipse x:Name="IdleDot" Width="7" Height="7" Fill="{StaticResource Brush.Green}"/>
+                <Border x:Name="CoverSlot" Width="22" Height="22" CornerRadius="6" Visibility="Collapsed"
+                        Background="{StaticResource Brush.Surface}">
+                    <Image x:Name="CoverImage" Stretch="UniformToFill"/>
+                    <Border.Clip>
+                        <RectangleGeometry Rect="0,0,22,22" RadiusX="6" RadiusY="6"/>
+                    </Border.Clip>
+                </Border>
+            </Grid>
+            <!-- audio spectrum (visible while playing) -->
+            <StackPanel x:Name="SpectrumPanel" Orientation="Horizontal" Height="16"
+                        VerticalAlignment="Center" Margin="9,0,0,0" Visibility="Collapsed">
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,0,2,0" VerticalAlignment="Bottom" Height="3"/>
+                <Rectangle Width="3" RadiusX="1.5" RadiusY="1.5" VerticalAlignment="Bottom" Height="3"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Center: pomodoro countdown when running -->
+        <TextBlock x:Name="PomodoroLabel" Grid.Column="1" Style="{StaticResource Text.Micro}"
+                   Foreground="{StaticResource Brush.Orange}" FontWeight="SemiBold"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Visibility="Collapsed" Text=""/>
+
+        <!-- Center: now-playing title, revealed on hover pre-expand -->
+        <TextBlock x:Name="HoverTitleLabel" Grid.Column="1" Style="{StaticResource Text.Micro}"
+                   Foreground="{StaticResource Brush.TextPrimary}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0"
+                   MaxWidth="200" TextTrimming="CharacterEllipsis"
+                   Visibility="Collapsed" Opacity="0" Text=""/>
+
+        <!-- Right: live metrics -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Style="{StaticResource Text.Micro}" Foreground="{StaticResource Brush.Green}" Text="↓"/>
+            <TextBlock x:Name="DownloadLabel" Style="{StaticResource Text.Micro}" Margin="1,0,0,0"
+                       FontFamily="{StaticResource Font.Text}" Text="0B"/>
+            <TextBlock Style="{StaticResource Text.Micro}" Foreground="{StaticResource Brush.Orange}" Margin="8,0,0,0" Text="↑"/>
+            <TextBlock x:Name="UploadLabel" Style="{StaticResource Text.Micro}" Margin="1,0,0,0" Text="0B"/>
+            <TextBlock Style="{StaticResource Text.Micro}" Margin="8,0,0,0" Foreground="{StaticResource Brush.TextTertiary}" Text="·"/>
+            <TextBlock x:Name="MemoryLabel" Style="{StaticResource Text.Micro}" Margin="8,0,0,0" Text="--%"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

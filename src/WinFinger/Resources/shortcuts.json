@@ -1,0 +1,282 @@
+[
+  {
+    "id": "generic",
+    "displayName": "通用 Windows",
+    "processNames": [],
+    "groups": [
+      {
+        "id": "editing",
+        "title": "编辑",
+        "items": [
+          {"id": "copy", "keys": "Ctrl+C", "action": "复制"},
+          {"id": "paste", "keys": "Ctrl+V", "action": "粘贴"},
+          {"id": "cut", "keys": "Ctrl+X", "action": "剪切"},
+          {"id": "undo", "keys": "Ctrl+Z", "action": "撤销"},
+          {"id": "redo", "keys": "Ctrl+Y", "action": "重做"},
+          {"id": "select-all", "keys": "Ctrl+A", "action": "全选"},
+          {"id": "find", "keys": "Ctrl+F", "action": "查找"}
+        ]
+      },
+      {
+        "id": "system",
+        "title": "系统",
+        "items": [
+          {"id": "clip-history", "keys": "Win+V", "action": "剪贴板历史"},
+          {"id": "screenshot", "keys": "Win+Shift+S", "action": "截图"},
+          {"id": "lock", "keys": "Win+L", "action": "锁定电脑"},
+          {"id": "desktop", "keys": "Win+D", "action": "显示桌面"},
+          {"id": "task-view", "keys": "Win+Tab", "action": "任务视图"},
+          {"id": "settings", "keys": "Win+I", "action": "打开设置"},
+          {"id": "explorer", "keys": "Win+E", "action": "文件资源管理器"},
+          {"id": "task-manager", "keys": "Ctrl+Shift+Esc", "action": "任务管理器"}
+        ]
+      },
+      {
+        "id": "window",
+        "title": "窗口",
+        "items": [
+          {"id": "close", "keys": "Alt+F4", "action": "关闭窗口"},
+          {"id": "switch", "keys": "Alt+Tab", "action": "切换窗口"},
+          {"id": "snap-left", "keys": "Win+←", "action": "窗口贴靠左侧"},
+          {"id": "snap-right", "keys": "Win+→", "action": "窗口贴靠右侧"},
+          {"id": "maximize", "keys": "Win+↑", "action": "最大化"},
+          {"id": "minimize", "keys": "Win+↓", "action": "最小化/还原"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "explorer",
+    "displayName": "文件资源管理器",
+    "processNames": ["explorer"],
+    "groups": [
+      {
+        "id": "files",
+        "title": "文件操作",
+        "items": [
+          {"id": "new-folder", "keys": "Ctrl+Shift+N", "action": "新建文件夹"},
+          {"id": "rename", "keys": "F2", "action": "重命名"},
+          {"id": "delete", "keys": "Delete", "action": "删除到回收站"},
+          {"id": "delete-perm", "keys": "Shift+Delete", "action": "永久删除"},
+          {"id": "properties", "keys": "Alt+Enter", "action": "属性"},
+          {"id": "refresh", "keys": "F5", "action": "刷新"}
+        ]
+      },
+      {
+        "id": "navigation",
+        "title": "导航",
+        "items": [
+          {"id": "address", "keys": "Ctrl+L", "action": "定位地址栏"},
+          {"id": "back", "keys": "Alt+←", "action": "后退"},
+          {"id": "forward", "keys": "Alt+→", "action": "前进"},
+          {"id": "up", "keys": "Alt+↑", "action": "上一级目录"},
+          {"id": "new-window", "keys": "Ctrl+N", "action": "新窗口"},
+          {"id": "new-tab", "keys": "Ctrl+T", "action": "新标签页"},
+          {"id": "preview", "keys": "Alt+P", "action": "预览窗格"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chrome",
+    "displayName": "Google Chrome",
+    "processNames": ["chrome"],
+    "groups": [
+      {
+        "id": "tabs",
+        "title": "标签页",
+        "items": [
+          {"id": "new-tab", "keys": "Ctrl+T", "action": "新标签页"},
+          {"id": "close-tab", "keys": "Ctrl+W", "action": "关闭标签页"},
+          {"id": "reopen-tab", "keys": "Ctrl+Shift+T", "action": "恢复关闭的标签页"},
+          {"id": "next-tab", "keys": "Ctrl+Tab", "action": "下一个标签页"},
+          {"id": "prev-tab", "keys": "Ctrl+Shift+Tab", "action": "上一个标签页"},
+          {"id": "goto-tab", "keys": "Ctrl+1..8", "action": "跳到第 N 个标签页"}
+        ]
+      },
+      {
+        "id": "page",
+        "title": "页面",
+        "items": [
+          {"id": "address", "keys": "Ctrl+L", "action": "定位地址栏"},
+          {"id": "refresh", "keys": "Ctrl+R", "action": "刷新"},
+          {"id": "hard-refresh", "keys": "Ctrl+Shift+R", "action": "强制刷新"},
+          {"id": "find", "keys": "Ctrl+F", "action": "页内查找"},
+          {"id": "zoom-in", "keys": "Ctrl+加号", "action": "放大"},
+          {"id": "zoom-reset", "keys": "Ctrl+0", "action": "恢复缩放"},
+          {"id": "devtools", "keys": "F12", "action": "开发者工具"},
+          {"id": "incognito", "keys": "Ctrl+Shift+N", "action": "无痕窗口"},
+          {"id": "history", "keys": "Ctrl+H", "action": "历史记录"},
+          {"id": "downloads", "keys": "Ctrl+J", "action": "下载内容"},
+          {"id": "bookmark", "keys": "Ctrl+D", "action": "收藏本页"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "edge",
+    "displayName": "Microsoft Edge",
+    "processNames": ["msedge"],
+    "groups": [
+      {
+        "id": "tabs",
+        "title": "标签页",
+        "items": [
+          {"id": "new-tab", "keys": "Ctrl+T", "action": "新标签页"},
+          {"id": "close-tab", "keys": "Ctrl+W", "action": "关闭标签页"},
+          {"id": "reopen-tab", "keys": "Ctrl+Shift+T", "action": "恢复关闭的标签页"},
+          {"id": "next-tab", "keys": "Ctrl+Tab", "action": "下一个标签页"},
+          {"id": "vertical-tabs", "keys": "Ctrl+Shift+,", "action": "垂直标签页"}
+        ]
+      },
+      {
+        "id": "page",
+        "title": "页面",
+        "items": [
+          {"id": "address", "keys": "Ctrl+L", "action": "定位地址栏"},
+          {"id": "refresh", "keys": "Ctrl+R", "action": "刷新"},
+          {"id": "find", "keys": "Ctrl+F", "action": "页内查找"},
+          {"id": "devtools", "keys": "F12", "action": "开发者工具"},
+          {"id": "inprivate", "keys": "Ctrl+Shift+N", "action": "InPrivate 窗口"},
+          {"id": "collections", "keys": "Ctrl+Shift+Y", "action": "集锦"},
+          {"id": "read-aloud", "keys": "Ctrl+Shift+U", "action": "大声朗读"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vscode",
+    "displayName": "Visual Studio Code",
+    "processNames": ["code"],
+    "groups": [
+      {
+        "id": "navigation",
+        "title": "导航",
+        "items": [
+          {"id": "palette", "keys": "Ctrl+Shift+P", "action": "命令面板"},
+          {"id": "quick-open", "keys": "Ctrl+P", "action": "快速打开文件"},
+          {"id": "goto-line", "keys": "Ctrl+G", "action": "跳转到行"},
+          {"id": "goto-symbol", "keys": "Ctrl+Shift+O", "action": "跳转到符号"},
+          {"id": "terminal", "keys": "Ctrl+`", "action": "切换终端"},
+          {"id": "sidebar", "keys": "Ctrl+B", "action": "切换侧边栏"},
+          {"id": "search-all", "keys": "Ctrl+Shift+F", "action": "全局搜索"}
+        ]
+      },
+      {
+        "id": "editing",
+        "title": "编辑",
+        "items": [
+          {"id": "line-copy", "keys": "Shift+Alt+↓", "action": "向下复制行"},
+          {"id": "line-move", "keys": "Alt+↓", "action": "下移当前行"},
+          {"id": "line-delete", "keys": "Ctrl+Shift+K", "action": "删除当前行"},
+          {"id": "multi-cursor", "keys": "Ctrl+D", "action": "选中下一个相同词"},
+          {"id": "comment", "keys": "Ctrl+/", "action": "切换行注释"},
+          {"id": "format", "keys": "Shift+Alt+F", "action": "格式化文档"},
+          {"id": "rename", "keys": "F2", "action": "重命名符号"},
+          {"id": "definition", "keys": "F12", "action": "跳到定义"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word",
+    "displayName": "Microsoft Word",
+    "processNames": ["winword"],
+    "groups": [
+      {
+        "id": "editing",
+        "title": "编辑",
+        "items": [
+          {"id": "save", "keys": "Ctrl+S", "action": "保存"},
+          {"id": "bold", "keys": "Ctrl+B", "action": "加粗"},
+          {"id": "italic", "keys": "Ctrl+I", "action": "斜体"},
+          {"id": "underline", "keys": "Ctrl+U", "action": "下划线"},
+          {"id": "find-replace", "keys": "Ctrl+H", "action": "查找替换"},
+          {"id": "style-clear", "keys": "Ctrl+空格", "action": "清除字符格式"}
+        ]
+      },
+      {
+        "id": "layout",
+        "title": "排版",
+        "items": [
+          {"id": "center", "keys": "Ctrl+E", "action": "居中对齐"},
+          {"id": "left", "keys": "Ctrl+L", "action": "左对齐"},
+          {"id": "justify", "keys": "Ctrl+J", "action": "两端对齐"},
+          {"id": "heading1", "keys": "Ctrl+Alt+1", "action": "标题 1"},
+          {"id": "page-break", "keys": "Ctrl+Enter", "action": "插入分页符"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "excel",
+    "displayName": "Microsoft Excel",
+    "processNames": ["excel"],
+    "groups": [
+      {
+        "id": "editing",
+        "title": "编辑",
+        "items": [
+          {"id": "save", "keys": "Ctrl+S", "action": "保存"},
+          {"id": "fill-down", "keys": "Ctrl+D", "action": "向下填充"},
+          {"id": "fill-right", "keys": "Ctrl+R", "action": "向右填充"},
+          {"id": "edit-cell", "keys": "F2", "action": "编辑单元格"},
+          {"id": "insert-row", "keys": "Ctrl+Shift+加号", "action": "插入行/列"},
+          {"id": "sum", "keys": "Alt+=", "action": "自动求和"}
+        ]
+      },
+      {
+        "id": "navigation",
+        "title": "导航",
+        "items": [
+          {"id": "goto-edge", "keys": "Ctrl+方向键", "action": "跳到数据区边缘"},
+          {"id": "select-region", "keys": "Ctrl+Shift+方向键", "action": "选择到边缘"},
+          {"id": "new-sheet", "keys": "Shift+F11", "action": "新建工作表"},
+          {"id": "switch-sheet", "keys": "Ctrl+PgDn", "action": "下一个工作表"},
+          {"id": "filter", "keys": "Ctrl+Shift+L", "action": "切换筛选"},
+          {"id": "table", "keys": "Ctrl+T", "action": "创建表格"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wechat",
+    "displayName": "微信",
+    "processNames": ["wechat", "weixin"],
+    "groups": [
+      {
+        "id": "chat",
+        "title": "聊天",
+        "items": [
+          {"id": "search", "keys": "Ctrl+F", "action": "搜索"},
+          {"id": "screenshot", "keys": "Alt+A", "action": "截图"},
+          {"id": "send", "keys": "Enter", "action": "发送消息"},
+          {"id": "newline", "keys": "Ctrl+Enter", "action": "换行"},
+          {"id": "unread", "keys": "Ctrl+G", "action": "跳到下一个未读"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "terminal",
+    "displayName": "Windows Terminal",
+    "processNames": ["windowsterminal", "wt"],
+    "groups": [
+      {
+        "id": "tabs",
+        "title": "标签页与窗格",
+        "items": [
+          {"id": "new-tab", "keys": "Ctrl+Shift+T", "action": "新标签页"},
+          {"id": "close-tab", "keys": "Ctrl+Shift+W", "action": "关闭标签页"},
+          {"id": "split-v", "keys": "Alt+Shift+加号", "action": "垂直分屏"},
+          {"id": "split-h", "keys": "Alt+Shift+减号", "action": "水平分屏"},
+          {"id": "switch-pane", "keys": "Alt+方向键", "action": "切换窗格"},
+          {"id": "palette", "keys": "Ctrl+Shift+P", "action": "命令面板"},
+          {"id": "copy", "keys": "Ctrl+Shift+C", "action": "复制"},
+          {"id": "paste", "keys": "Ctrl+Shift+V", "action": "粘贴"},
+          {"id": "find", "keys": "Ctrl+Shift+F", "action": "查找"}
+        ]
+      }
+    ]
+  }
+]
